@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Image Slider</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="slider-container">
+        <div class="slider-wrapper">
+            <div class="slider-track" id="sliderTrack">
+                <div class="slide active">
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=500&fit=crop" alt="Mountain Landscape">
+                    <div class="slide-content">
+                        <div class="slide-title">Majestic Mountains</div>
+                        <div class="slide-description">Breathtaking peaks reaching towards the sky</div>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800&h=500&fit=crop" alt="Forest Lake">
+                    <div class="slide-content">
+                        <div class="slide-title">Serene Forest Lake</div>
+                        <div class="slide-description">Crystal clear waters reflecting nature's beauty</div>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop" alt="Ocean Waves">
+                    <div class="slide-content">
+                        <div class="slide-title">Ocean Waves</div>
+                        <div class="slide-description">Endless blue horizons and rhythmic waves</div>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&h=500&fit=crop" alt="Desert Sunset">
+                    <div class="slide-content">
+                        <div class="slide-title">Desert Sunset</div>
+                        <div class="slide-description">Golden sands painted with evening light</div>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1418489098061-ce87b5dc3aee?w=800&h=500&fit=crop" alt="Autumn Forest">
+                    <div class="slide-content">
+                        <div class="slide-title">Autumn Forest</div>
+                        <div class="slide-description">Nature's colorful transition in full display</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="nav-button prev" onclick="prevSlide()">‹</button>
+        <button class="nav-button next" onclick="nextSlide()">›</button>
+
+        <div class="indicators" id="indicators">
+            <div class="indicator active" onclick="goToSlide(0)"></div>
+            <div class="indicator" onclick="goToSlide(1)"></div>
+            <div class="indicator" onclick="goToSlide(2)"></div>
+            <div class="indicator" onclick="goToSlide(3)"></div>
+            <div class="indicator" onclick="goToSlide(4)"></div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn active" id="autoplayBtn" onclick="toggleAutoplay()">Auto</button>
+            <button class="control-btn" onclick="resetSlider()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        let totalSlides = 5;
+        let autoplayInterval;
+        let isAutoplay = true;
+
+        const sliderTrack = document.getElementById('sliderTrack');
+        const indicators = document.querySelectorAll('.indicator');
+        const slides = document.querySelectorAll('.slide');
+        const autoplayBtn = document.getElementById('autoplayBtn');
+
+        function updateSlider() {
+            // Move the slider track
+            const translateX = -currentSlide * (100 / totalSlides);
+            sliderTrack.style.transform = `translateX(${translateX}%)`;
+
+            // Update indicators
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentSlide);
+            });
+
+            // Update slide content animation
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlider();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlider();
+        }
+
+        function startAutoplay() {
+            if (autoplayInterval) clearInterval(autoplayInterval);
+            autoplayInterval = setInterval(nextSlide, 4000);
+        }
+
+        function stopAutoplay() {
+            if (autoplayInterval) {
+                clearInterval(autoplayInterval);
+                autoplayInterval = null;
+            }
+        }
+
+        function toggleAutoplay() {
+            isAutoplay = !isAutoplay;
+            autoplayBtn.textContent = isAutoplay ? 'Auto' : 'Manual';
+            autoplayBtn.classList.toggle('active', isAutoplay);
+            
+            if (isAutoplay) {
+                startAutoplay();
+            } else {
+                stopAutoplay();
+            }
+        }
+
+        function resetSlider() {
+            currentSlide = 0;
+            updateSlider();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                prevSlide();
+            } else if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                toggleAutoplay();
+            }
+        });
+
+        // Pause autoplay on hover
+        const sliderContainer = document.querySelector('.slider-container');
+        sliderContainer.addEventListener('mouseenter', () => {
+            if (isAutoplay) stopAutoplay();
+        });
+
+        sliderContainer.addEventListener('mouseleave', () => {
+            if (isAutoplay) startAutoplay();
+        });
+
+        // Touch/swipe support for mobile
+        let startX = 0;
+        let endX = 0;
+        let startY = 0;
+        let endY = 0;
+
+        sliderContainer.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+
+        sliderContainer.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+            
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            
+            // Only trigger swipe if horizontal movement is greater than vertical
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                if (deltaX > 0) {
+                    prevSlide();
+                } else {
+                    nextSlide();
+                }
+            }
+        });
+
+        // Initialize
+        updateSlider();
+        if (isAutoplay) {
+            startAutoplay();
+        }
+    </script>
+</body>
+</html>
